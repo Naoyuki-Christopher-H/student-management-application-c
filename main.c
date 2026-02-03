@@ -375,7 +375,7 @@ void printStudentReport(void)
         return;
     }
 
-    printf("\nALL STUDENTS (%d)\n", studentCount);
+    printf("\nTOTAL STUDENT(S): %d\n", studentCount);
     printf("=================================================\n");
 
     Student* cur = head;
@@ -383,7 +383,9 @@ void printStudentReport(void)
 
     while (cur != NULL)
     {
-        printf("Student #%d\n", idx++);
+        printf("-------------------------------------------------\n");
+        printf("STUDENT %d\n", idx++);
+        printf("-------------------------------------------------\n");
         printf("ID     : %s\n", cur->studentId);
         printf("Name   : %s\n", cur->name);
         printf("Age    : %d\n",  cur->age);
