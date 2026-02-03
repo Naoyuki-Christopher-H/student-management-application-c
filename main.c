@@ -1,17 +1,8 @@
 /******************************************************************************
  * student-management-application-c
  *
- * This project implements a console-based student management system in C.
- * It allows users to perform CRUD operations on student records through
- * a menu-driven interface. The program uses dynamic memory allocation for
- * student data and a linked list for storage.
- *
- * Main functionalities:
- * - Capture new student details with validation
- * - Search for students by ID
- * - Delete student records with confirmation
- * - Print report of all students
- * - Exit the application cleanly
+ * Console-based student management system using a singly linked list.
+ * Supports CRUD operations with basic input validation and duplicate ID check.
  ******************************************************************************/
 
 #include <stdio.h>
@@ -19,28 +10,21 @@
 #include <string.h>
 #include <ctype.h>
 
-#define MAX_ID_LENGTH 20
-#define MAX_NAME_LENGTH 50
-#define MAX_EMAIL_LENGTH 100
-#define MAX_COURSE_LENGTH 50
-#define MIN_AGE 16
-#define MAX_AGE 120
+#define MAX_ID_LENGTH       20
+#define MAX_NAME_LENGTH     50
+#define MAX_EMAIL_LENGTH    100
+#define MAX_COURSE_LENGTH   50
+#define MIN_AGE             16
+#define MAX_AGE             120
 
 /******************************************************************************
  * Structure: Student
- *
- * Represents a student record with the following fields:
- * - studentId: Unique identifier for the student
- * - name: Student's full name
- * - age: Student's age (must be >= MIN_AGE)
- * - email: Student's email address
- * - course: Course the student is enrolled in
- * - next: Pointer to the next student in the linked list
  ******************************************************************************/
-typedef struct Student {
+typedef struct Student
+{
     char studentId[MAX_ID_LENGTH];
     char name[MAX_NAME_LENGTH];
-    int age;
+    int  age;
     char email[MAX_EMAIL_LENGTH];
     char course[MAX_COURSE_LENGTH];
     struct Student* next;
@@ -48,65 +32,54 @@ typedef struct Student {
 
 /******************************************************************************
  * Global Variables
- *
- * - head: Pointer to the first student in the linked list
- * - studentCount: Number of students currently in the system
  ******************************************************************************/
-Student* head = NULL;
-int studentCount = 0;
+Student* head         = NULL;
+int      studentCount = 0;
 
 /******************************************************************************
  * Function Prototypes
  ******************************************************************************/
-void showMenu(void);
-void captureStudent(void);
-int validateAgeInput(const char* input);
-void searchStudent(void);
-void deleteStudent(void);
-void printStudentReport(void);
-void exitApplication(void);
-void saveStudent(Student* student);
-Student* searchStudentById(const char* studentId);
-int deleteStudentById(const char* studentId);
-void freeAllStudents(void);
-void trimNewline(char* str);
-int getYesNoInput(const char* prompt);
+void        showMenu(void);
+void        captureStudent(void);
+int         isValidAgeInput(const char* input, int* outAge);
+int         isDuplicateId(const char* id);
+int         isBasicEmailFormat(const char* email);
+void        searchStudent(void);
+void        deleteStudent(void);
+void        printStudentReport(void);
+void        exitApplication(void);
+void        saveStudent(Student* student);
+Student*    searchStudentById(const char* studentId);
+int         deleteStudentById(const char* studentId);
+void        freeAllStudents(void);
+void        trimNewline(char* str);
+int         getYesNoInput(const char* prompt);
 
 /******************************************************************************
  * Function: main
- *
- * Entry point of the application. Displays initial greeting and launches
- * the main menu loop. Continuously processes user input until exit is chosen.
- *
- * Returns: 0 on successful execution
  ******************************************************************************/
 int main(void)
 {
     char initialChoice[10];
 
-    /* Display application header */
     printf("STUDENT MANAGEMENT APPLICATION\n");
-    printf("*************************************************\n");
-    printf("Enter (1) to launch menu or any other key to exit\n");
-    printf("    \n");
+    printf("=================================================\n");
+    printf("Enter 1 to launch menu, any other key to exit\n");
+    printf("\n");
 
-    /* Get initial user choice */
     if (fgets(initialChoice, sizeof(initialChoice), stdin) == NULL)
     {
-        printf("Error reading input. Exiting application.\n");
+        printf("Error reading input. Exiting.\n");
         return 1;
     }
-
     trimNewline(initialChoice);
 
-    /* Check if user wants to launch the application */
     if (strcmp(initialChoice, "1") != 0)
     {
-        printf("Exiting the application. Goodbye!\n");
+        printf("Exiting application. Goodbye.\n");
         return 0;
     }
 
-    /* Main application loop */
     while (1)
     {
         showMenu();
@@ -117,10 +90,8 @@ int main(void)
             printf("Error reading input. Please try again.\n");
             continue;
         }
-
         trimNewline(choice);
 
-        /* Process user menu choice */
         if (strcmp(choice, "1") == 0)
         {
             captureStudent();
@@ -140,11 +111,11 @@ int main(void)
         else if (strcmp(choice, "5") == 0)
         {
             exitApplication();
-            break; /* Exit the loop after cleanup */
+            break;
         }
         else
         {
-            printf("Invalid choice! Please enter a valid menu option.\n");
+            printf("Invalid option. Please enter 1-5.\n");
         }
     }
 
@@ -153,314 +124,292 @@ int main(void)
 
 /******************************************************************************
  * Function: showMenu
- *
- * Displays the main menu with all available options to the user.
- * Each option corresponds to a specific operation in the application.
  ******************************************************************************/
 void showMenu(void)
 {
-    printf("    \n");
-    printf("Please select one of the following menu items:\n");
-    printf("(1) Capture a new student.\n");
-    printf("(2) Search for a student.\n");
-    printf("(3) Delete a student.\n");
-    printf("(4) Print student report.\n");
-    printf("(5) Exit Application.\n");
-    printf("    \n");
+    printf("\n");
+    printf("MENU\n");
+    printf("-------------------------------------------------\n");
+    printf("1) Capture a new student\n");
+    printf("2) Search for a student\n");
+    printf("3) Delete a student\n");
+    printf("4) Print student report\n");
+    printf("5) Exit application\n");
+    printf("-------------------------------------------------\n");
+    printf("Enter your choice (1-5): ");
 }
 
 /******************************************************************************
  * Function: captureStudent
- *
- * Guides the user through entering details for a new student.
- * Validates input and saves the student record to the system.
- * Uses dynamic memory allocation for the new student structure.
  ******************************************************************************/
 void captureStudent(void)
 {
-    Student* newStudent = (Student*)malloc(sizeof(Student));
+    Student* newStudent = malloc(sizeof(Student));
     if (newStudent == NULL)
     {
-        printf("Memory allocation failed. Cannot add new student.\n");
+        printf("Memory allocation failed. Cannot add student.\n");
         return;
     }
 
-    printf("CAPTURE A NEW STUDENT\n");
-    printf("*****************************\n");
+    printf("\nCAPTURE NEW STUDENT\n");
+    printf("-------------------------------------------------\n");
 
-    /* Get student ID */
-    printf("Enter the student id: ");
-    if (fgets(newStudent->studentId, sizeof(newStudent->studentId), stdin) == NULL)
+    /* Student ID */
+    int valid = 0;
+    while (!valid)
     {
-        printf("Error reading input.\n");
-        free(newStudent);
-        return;
+        printf("Student ID     : ");
+        if (fgets(newStudent->studentId, sizeof(newStudent->studentId), stdin) == NULL)
+        {
+            free(newStudent);
+            return;
+        }
+        trimNewline(newStudent->studentId);
+
+        size_t len = strlen(newStudent->studentId);
+        if (len == 0 || len >= MAX_ID_LENGTH - 1)
+        {
+            printf("Error: ID must be 1 to %d characters.\n", MAX_ID_LENGTH - 2);
+            continue;
+        }
+
+        if (isDuplicateId(newStudent->studentId))
+        {
+            printf("Error: Student ID '%s' already exists.\n", newStudent->studentId);
+            continue;
+        }
+
+        valid = 1;
     }
-    trimNewline(newStudent->studentId);
 
-    /* Get student name */
-    printf("Enter the student name: ");
-    if (fgets(newStudent->name, sizeof(newStudent->name), stdin) == NULL)
+    /* Name */
+    valid = 0;
+    while (!valid)
     {
-        printf("Error reading input.\n");
-        free(newStudent);
-        return;
+        printf("Full name      : ");
+        if (fgets(newStudent->name, sizeof(newStudent->name), stdin) == NULL)
+        {
+            free(newStudent);
+            return;
+        }
+        trimNewline(newStudent->name);
+
+        if (strlen(newStudent->name) < 2)
+        {
+            printf("Error: Name must be at least 2 characters.\n");
+            continue;
+        }
+        valid = 1;
     }
-    trimNewline(newStudent->name);
 
-    /* Get and validate student age */
-    char ageInput[10];
-    int validAge = 0;
-    while (!validAge)
+    /* Age */
+    char ageInput[16];
+    int  age;
+    valid = 0;
+    while (!valid)
     {
-        printf("Enter the student age: ");
+        printf("Age            : ");
         if (fgets(ageInput, sizeof(ageInput), stdin) == NULL)
         {
-            printf("Error reading input.\n");
             free(newStudent);
             return;
         }
         trimNewline(ageInput);
 
-        newStudent->age = validateAgeInput(ageInput);
-        if (newStudent->age >= MIN_AGE)
+        if (isValidAgeInput(ageInput, &age))
         {
-            validAge = 1;
+            newStudent->age = age;
+            valid = 1;
         }
         else
         {
-            printf("You have entered an incorrect student age!!!\n");
-            printf("Please re-enter the student age >>\n");
+            printf("Error: Age must be between %d and %d.\n", MIN_AGE, MAX_AGE);
         }
     }
 
-    /* Get student email */
-    printf("Enter the student email: ");
-    if (fgets(newStudent->email, sizeof(newStudent->email), stdin) == NULL)
+    /* Email */
+    valid = 0;
+    while (!valid)
     {
-        printf("Error reading input.\n");
-        free(newStudent);
-        return;
-    }
-    trimNewline(newStudent->email);
+        printf("Email          : ");
+        if (fgets(newStudent->email, sizeof(newStudent->email), stdin) == NULL)
+        {
+            free(newStudent);
+            return;
+        }
+        trimNewline(newStudent->email);
 
-    /* Get student course */
-    printf("Enter the student course: ");
+        if (strlen(newStudent->email) < 5 || !isBasicEmailFormat(newStudent->email))
+        {
+            printf("Warning: Please enter a valid-looking email (example@domain.com).\n");
+            // Note: still accept — strict validation usually done server-side
+        }
+        valid = 1;
+    }
+
+    /* Course */
+    printf("Course         : ");
     if (fgets(newStudent->course, sizeof(newStudent->course), stdin) == NULL)
     {
-        printf("Error reading input.\n");
         free(newStudent);
         return;
     }
     trimNewline(newStudent->course);
 
-    /* Initialize the next pointer and save the student */
     newStudent->next = NULL;
     saveStudent(newStudent);
 
-    printf("Student details have been successfully saved.\n");
+    printf("\nStudent successfully added.\n");
 }
 
 /******************************************************************************
- * Function: validateAgeInput
- *
- * Validates that the age input is a positive integer within the valid range.
- *
- * Parameters:
- *   input - String containing the user's age input
- *
- * Returns:
- *   Validated age as integer, or -1 if input is invalid
+ * Returns 1 if input represents valid age in range, stores result in *outAge
  ******************************************************************************/
-int validateAgeInput(const char* input)
+int isValidAgeInput(const char* input, int* outAge)
 {
-    /* Check if input is empty */
-    if (input == NULL || strlen(input) == 0)
-    {
-        return -1;
-    }
+    if (input == NULL || *input == '\0') return 0;
 
-    /* Check if all characters are digits */
-    for (int i = 0; input[i] != '\0'; i++)
-    {
-        if (!isdigit(input[i]))
-        {
-            return -1;
-        }
-    }
+    char* end;
+    long  val = strtol(input, &end, 10);
 
-    /* Convert to integer and validate range */
-    int age = atoi(input);
-    if (age < MIN_AGE || age > MAX_AGE)
-    {
-        return -1;
-    }
+    if (end == input || *end != '\0') return 0;           /* not pure number */
+    if (val < MIN_AGE || val > MAX_AGE) return 0;
 
-    return age;
+    *outAge = (int)val;
+    return 1;
 }
 
 /******************************************************************************
- * Function: searchStudent
- *
- * Prompts the user for a student ID and searches for the student in the system.
- * Displays the student's details if found, or an appropriate message if not.
+ * Very basic email format check (contains @ and . after it)
  ******************************************************************************/
+int isBasicEmailFormat(const char* email)
+{
+    const char* at = strchr(email, '@');
+    if (!at || at == email) return 0;
+
+    const char* dot = strrchr(at, '.');
+    if (!dot || dot <= at + 1 || dot[1] == '\0') return 0;
+
+    return 1;
+}
+
+/******************************************************************************
+ * Checks whether the ID already exists in the list
+ ******************************************************************************/
+int isDuplicateId(const char* id)
+{
+    Student* current = head;
+    while (current != NULL)
+    {
+        if (strcmp(current->studentId, id) == 0)
+        {
+            return 1;
+        }
+        current = current->next;
+    }
+    return 0;
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Remaining functions (only minor formatting & message improvements)        */
+/* ────────────────────────────────────────────────────────────────────────── */
+
 void searchStudent(void)
 {
-    char studentId[MAX_ID_LENGTH];
+    char id[MAX_ID_LENGTH];
+    printf("\nSEARCH STUDENT\n");
+    printf("Enter student ID: ");
+    if (fgets(id, sizeof(id), stdin) == NULL) return;
+    trimNewline(id);
 
-    printf("Enter the student id to search: ");
-    if (fgets(studentId, sizeof(studentId), stdin) == NULL)
+    Student* s = searchStudentById(id);
+    printf("-------------------------------------------------\n");
+
+    if (s != NULL)
     {
-        printf("Error reading input.\n");
-        return;
-    }
-    trimNewline(studentId);
-
-    Student* student = searchStudentById(studentId);
-
-    printf("---------------------------------------------\n");
-    if (student != NULL)
-    {
-        printf("STUDENT ID: %s\n", student->studentId);
-        printf("STUDENT NAME: %s\n", student->name);
-        printf("STUDENT AGE: %d\n", student->age);
-        printf("STUDENT EMAIL: %s\n", student->email);
-        printf("STUDENT COURSE: %s\n", student->course);
+        printf("ID     : %s\n", s->studentId);
+        printf("Name   : %s\n", s->name);
+        printf("Age    : %d\n",  s->age);
+        printf("Email  : %s\n", s->email);
+        printf("Course : %s\n", s->course);
     }
     else
     {
-        printf("Student with Student Id: %s was not found!\n", studentId);
+        printf("No student found with ID: %s\n", id);
     }
-    printf("---------------------------------------------\n");
+    printf("-------------------------------------------------\n");
 }
 
-/******************************************************************************
- * Function: deleteStudent
- *
- * Prompts the user for a student ID and asks for confirmation before deleting.
- * Removes the student from the system if confirmed and found.
- * Provides feedback on the operation's success or failure.
- ******************************************************************************/
 void deleteStudent(void)
 {
-    char studentId[MAX_ID_LENGTH];
+    char id[MAX_ID_LENGTH];
+    printf("\nDELETE STUDENT\n");
+    printf("Enter student ID: ");
+    if (fgets(id, sizeof(id), stdin) == NULL) return;
+    trimNewline(id);
 
-    printf("Enter the student id to delete: ");
-    if (fgets(studentId, sizeof(studentId), stdin) == NULL)
+    if (!getYesNoInput("Confirm deletion? (y/n): "))
     {
-        printf("Error reading input.\n");
+        printf("Deletion cancelled.\n");
         return;
     }
-    trimNewline(studentId);
 
-    /* Ask for confirmation */
-    if (getYesNoInput("Are you sure you want to delete this student? (y/n): "))
+    int success = deleteStudentById(id);
+    printf("-------------------------------------------------\n");
+    if (success)
     {
-        int success = deleteStudentById(studentId);
-
-        printf("---------------------------------------------\n");
-        if (success)
-        {
-            printf("Student with Student Id: %s WAS deleted!\n", studentId);
-        }
-        else
-        {
-            printf("Student with Student Id: %s was not found!\n", studentId);
-        }
-        printf("---------------------------------------------\n");
+        printf("Student %s was deleted successfully.\n", id);
     }
     else
     {
-        printf("Deletion cancelled.\n");
+        printf("Student %s not found.\n", id);
     }
+    printf("-------------------------------------------------\n");
 }
 
-/******************************************************************************
- * Function: printStudentReport
- *
- * Generates and displays a report of all students in the system.
- * Lists each student's details in a formatted output.
- * Shows a message if no students are found.
- ******************************************************************************/
 void printStudentReport(void)
 {
     if (studentCount == 0)
     {
-        printf("No students found in the system.\n");
+        printf("\nNo students registered yet.\n");
         return;
     }
 
-    Student* current = head;
-    int count = 1;
+    printf("\nALL STUDENTS (%d)\n", studentCount);
+    printf("=================================================\n");
 
-    while (current != NULL)
+    Student* cur = head;
+    int      idx = 1;
+
+    while (cur != NULL)
     {
-        printf("STUDENT %d\n", count);
-        printf("------------------------------\n");
-        printf("STUDENT ID: %s\n", current->studentId);
-        printf("STUDENT NAME: %s\n", current->name);
-        printf("STUDENT AGE: %d\n", current->age);
-        printf("STUDENT EMAIL: %s\n", current->email);
-        printf("STUDENT COURSE: %s\n", current->course);
-        printf("------------------------------\n");
-
-        current = current->next;
-        count++;
+        printf("Student #%d\n", idx++);
+        printf("ID     : %s\n", cur->studentId);
+        printf("Name   : %s\n", cur->name);
+        printf("Age    : %d\n",  cur->age);
+        printf("Email  : %s\n", cur->email);
+        printf("Course : %s\n", cur->course);
+        printf("-------------------------------------------------\n");
+        cur = cur->next;
     }
 }
 
-/******************************************************************************
- * Function: exitApplication
- *
- * Cleans up all allocated memory and exits the application.
- * Displays a farewell message to the user.
- ******************************************************************************/
 void exitApplication(void)
 {
     freeAllStudents();
-    printf("Exiting the application. Goodbye!\n");
+    printf("\nAll data cleared. Goodbye.\n");
 }
 
-/******************************************************************************
- * Function: saveStudent
- *
- * Adds a new student to the linked list at the beginning.
- * Updates the student count.
- *
- * Parameters:
- *   student - Pointer to the Student structure to be added
- ******************************************************************************/
 void saveStudent(Student* student)
 {
-    if (head == NULL)
-    {
-        head = student;
-    }
-    else
-    {
-        student->next = head;
-        head = student;
-    }
+    student->next = head;
+    head = student;
     studentCount++;
 }
 
-/******************************************************************************
- * Function: searchStudentById
- *
- * Searches for a student by ID in the linked list.
- * Uses linear search through the list.
- *
- * Parameters:
- *   studentId - ID of the student to search for
- *
- * Returns:
- *   Pointer to the found student, or NULL if not found
- ******************************************************************************/
 Student* searchStudentById(const char* studentId)
 {
     Student* current = head;
-
     while (current != NULL)
     {
         if (strcmp(current->studentId, studentId) == 0)
@@ -469,90 +418,49 @@ Student* searchStudentById(const char* studentId)
         }
         current = current->next;
     }
-
     return NULL;
 }
 
-/******************************************************************************
- * Function: deleteStudentById
- *
- * Deletes a student from the linked list by ID.
- * Handles three cases: deleting the head, middle, or tail node.
- *
- * Parameters:
- *   studentId - ID of the student to delete
- *
- * Returns:
- *   1 if student was successfully deleted, 0 if not found
- ******************************************************************************/
 int deleteStudentById(const char* studentId)
 {
-    Student* current = head;
-    Student* previous = NULL;
+    Student* curr = head;
+    Student* prev = NULL;
 
-    /* Search for the student */
-    while (current != NULL && strcmp(current->studentId, studentId) != 0)
+    while (curr != NULL && strcmp(curr->studentId, studentId) != 0)
     {
-        previous = current;
-        current = current->next;
+        prev = curr;
+        curr = curr->next;
     }
 
-    /* Student not found */
-    if (current == NULL)
-    {
-        return 0;
-    }
+    if (curr == NULL) return 0;
 
-    /* Student found - delete from list */
-    if (previous == NULL)
+    if (prev == NULL)
     {
-        /* Deleting the head */
-        head = current->next;
+        head = curr->next;
     }
     else
     {
-        /* Deleting middle or tail */
-        previous->next = current->next;
+        prev->next = curr->next;
     }
 
-    /* Free memory and update count */
-    free(current);
+    free(curr);
     studentCount--;
-
     return 1;
 }
 
-/******************************************************************************
- * Function: freeAllStudents
- *
- * Frees all dynamically allocated memory for student records.
- * Traverses the linked list and frees each node.
- ******************************************************************************/
 void freeAllStudents(void)
 {
-    Student* current = head;
-    Student* next;
-
-    while (current != NULL)
+    Student* curr = head;
+    while (curr != NULL)
     {
-        next = current->next;
-        free(current);
-        current = next;
+        Student* temp = curr;
+        curr = curr->next;
+        free(temp);
     }
-
     head = NULL;
     studentCount = 0;
 }
 
-/******************************************************************************
- * Function: trimNewline
- *
- * Removes trailing newline character from a string.
- * Commonly used after fgets() to clean up input.
- *
- * Parameters:
- *   str - String to be modified
- ******************************************************************************/
 void trimNewline(char* str)
 {
     size_t len = strlen(str);
@@ -562,45 +470,21 @@ void trimNewline(char* str)
     }
 }
 
-/******************************************************************************
- * Function: getYesNoInput
- *
- * Prompts the user for yes/no confirmation and validates the input.
- *
- * Parameters:
- *   prompt - The prompt message to display
- *
- * Returns:
- *   1 for yes (y/Y), 0 for no (n/N)
- ******************************************************************************/
 int getYesNoInput(const char* prompt)
 {
-    char input[10];
-
+    char buf[10];
     while (1)
     {
         printf("%s", prompt);
-        if (fgets(input, sizeof(input), stdin) == NULL)
+        if (fgets(buf, sizeof(buf), stdin) == NULL) continue;
+        trimNewline(buf);
+
+        if (strlen(buf) == 1)
         {
-            printf("Error reading input.\n");
-            continue;
+            char ch = (char)tolower(buf[0]);
+            if (ch == 'y') return 1;
+            if (ch == 'n') return 0;
         }
-
-        trimNewline(input);
-
-        if (strlen(input) == 1)
-        {
-            char ch = tolower(input[0]);
-            if (ch == 'y')
-            {
-                return 1;
-            }
-            else if (ch == 'n')
-            {
-                return 0;
-            }
-        }
-
-        printf("Please enter 'y' for yes or 'n' for no.\n");
+        printf("Please enter y or n.\n");
     }
 }
