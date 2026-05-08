@@ -1,8 +1,8 @@
-# Student Management Application (C)
+# Student Management Application
 
-Console-based student record management system using a singly linked list.  
-Implements basic CRUD operations (Create, Read, Delete — Update not yet implemented) 
-with input validation and duplicate prevention.
+Console-based student record management system using a singly linked list.
+Implements basic CRUD operations (Create, Read, Delete — Update not yet
+implemented) with input validation and duplicate prevention.
 
 ## Table of Contents
 
@@ -17,15 +17,17 @@ with input validation and duplicate prevention.
 
 ## Description
 
-This project is a menu-driven console application written in standard C that allows users to:
+This project is a menu-driven console application written in standard C that
+allows users to:
 
-- Add new student records (with validation for ID uniqueness, name length, age range, and basic email format)
+- Add new student records (with validation for ID uniqueness, name length,
+  age range, and basic email format)
 - Search for a student by ID
 - Delete a student record (with confirmation prompt)
 - View a formatted report of all registered students
 - Exit the program cleanly (with proper memory deallocation)
 
-Data is stored in memory using a singly linked list (insertion at head).  
+Data is stored in memory using a singly linked list (insertion at head).
 No file persistence is implemented in the current version.
 
 The application demonstrates core C concepts including:
@@ -33,7 +35,8 @@ The application demonstrates core C concepts including:
 - Dynamic memory allocation (`malloc` / `free`)
 - Singly linked list operations (insert, search, delete)
 - Input handling with `fgets` and string cleaning
-- Basic data validation (age parsing with `strtol`, duplicate ID check, minimal email sanity)
+- Basic data validation (age parsing with `strtol`, duplicate ID check,
+  minimal email sanity)
 - Modular program structure with separate functions
 
 ## Features
@@ -41,7 +44,8 @@ The application demonstrates core C concepts including:
 - Unique student ID enforcement (prevents duplicates)
 - Age validation (must be between 16 and 120)
 - Name length check (minimum 2 characters)
-- Basic email format validation (contains `@` and a `.` after it; shows warning but accepts)
+- Basic email format validation (contains `@` and a `.` after it; shows
+  warning but accepts)
 - Confirmation before deletion
 - Clean memory management on exit (no leaks)
 - User-friendly menu interface with clear prompts and separators
@@ -79,7 +83,8 @@ The application demonstrates core C concepts including:
    gcc -o student_manager main.c -Wall -std=c99
    ```
 
-   (Use `-Wall` to enable warnings; `-std=c99` or `-std=c11` for better compatibility)
+   (Use `-Wall` to enable warnings; `-std=c99` or `-std=c11` for better
+   compatibility)
 
 3. Run the application:
 
@@ -143,6 +148,11 @@ Contributions are welcome.
 4. Push to the branch (`git push origin feature/add-update`)
 5. Open a pull request
 
-Please ensure code follows the existing style (Allman bracing, detailed comments, clear variable names).
+Please ensure code follows the existing style (Allman bracing, detailed
+comments, clear variable names).
+
+---
+
+End of Document
 
 ---
