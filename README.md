@@ -153,6 +153,6 @@ comments, clear variable names).
 
 ---
 
-End of Document
+END OF DOCUMENT
 
 ---
